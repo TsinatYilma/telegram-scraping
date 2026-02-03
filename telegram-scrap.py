@@ -1,36 +1,27 @@
+import os
 from telethon import TelegramClient
-from telethon.tl.functions.messages import GetHistoryRequest
+from telethon.tl.functions.channels import JoinChannelRequest
+from dotenv import load_dotenv
 
+load_dotenv() 
 
-async def scrape():
+api_id = int(os.getenv("API_ID"))
+api_hash = os.getenv("API_HASH")
+
+client = TelegramClient("anon", api_id, api_hash)
+
+async def join_channel(client, channel_link):
+    try:
+        await client(JoinChannelRequest(channel_link))
+        print("✅ Successfully joined the channel")
+    except Exception as e:
+        print("❌ Failed to join the channel:", e)
+
+async def main():
     await client.start()
-    channel = await client.get_entity(channel_username)
-
-    offset_id = 0
-    limit = 100  # messages per request
-    all_messages = []
-
-    while True:
-        history = await client(GetHistoryRequest(
-            peer=channel,
-            offset_id=offset_id,
-            offset_date=None,
-            add_offset=0,
-            limit=limit,
-            max_id=0,
-            min_id=0,
-            hash=0
-        ))
-
-        if not history.messages:
-            break
-
-        for message in history.messages:
-            all_messages.append(message)
-
-        offset_id = history.messages[-1].id
-
-    print(f"Scraped {len(all_messages)} messages")
+    
+    channel_link = "https://t.me/ShegerEventsHub"  
+    await join_channel(client, channel_link)
 
 with client:
-    client.loop.run_until_complete(scrape())
+    client.loop.run_until_complete(main())
