@@ -29,7 +29,7 @@ async def main():
     
     channel_link = "https://t.me/Afromile"  
     await join_channel(client, channel_link)
-    await scrape_messages(client, channel_link, 100)
+    await scrape_messages(client, channel_link, 1)
 
 async def scrape_messages(client, channel, limit=5):
 
