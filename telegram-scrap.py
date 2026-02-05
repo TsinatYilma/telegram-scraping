@@ -4,6 +4,7 @@ from telethon.tl.functions.channels import JoinChannelRequest
 from extractor import extract_title, extract_description, extract_price
 from state import load_last_id, save_last_id
 from dotenv import load_dotenv
+from lib.upload_image import upload_image
 import re
 import json
 
@@ -28,7 +29,7 @@ async def main():
     
     channel_link = "https://t.me/Afromile"  
     await join_channel(client, channel_link)
-    await scrape_messages(client, channel_link, 10)
+    await scrape_messages(client, channel_link, 100)
 
 async def scrape_messages(client, channel, limit=5):
 
@@ -38,7 +39,7 @@ async def scrape_messages(client, channel, limit=5):
 
     async for message in client.iter_messages(channel, limit):
         if not message.text or message.id <= last_id:
-            break
+            continue
 
         text = message.text.strip()
         parts = text.strip().split("\n\n", 2)
@@ -62,6 +63,7 @@ async def scrape_messages(client, channel, limit=5):
         image_path = None
         if message.photo:
             image_path = await message.download_media(file="images/")
+            image_url = image_url = upload_image(image_path)
 
         # FINALE OBJECT
         events.append({
@@ -69,7 +71,7 @@ async def scrape_messages(client, channel, limit=5):
             "title": title,
             "description": description,
             "price": price,
-            "image": image_path,
+            "image": image_url,
             "datePosted": message.date.isoformat() if message.date else None,
         })
         max_seen_id = max(max_seen_id, message.id)
