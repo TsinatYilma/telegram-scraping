@@ -1,7 +1,7 @@
 import os, requests
 from telethon import TelegramClient
 from telethon.tl.functions.channels import JoinChannelRequest
-from extractor import extract_title, extract_description, extract_price
+from extractor import extract_title, extract_description, extract_pricing, extract_city, extract_contact, extract_date, extract_location
 from state import load_last_id, save_last_id
 from dotenv import load_dotenv
 from lib.upload_image import upload_image
@@ -27,9 +27,9 @@ async def join_channel(client, channel_link):
 async def main():
     await client.start()
     
-    channel_link = "https://t.me/Afromile"  
+    channel_link = "https://t.me/ShegerEventsHub"  
     await join_channel(client, channel_link)
-    await scrape_messages(client, channel_link, 1)
+    await scrape_messages(client, channel_link, 20)
 
 async def scrape_messages(client, channel, limit=5):
 
@@ -57,7 +57,7 @@ async def scrape_messages(client, channel, limit=5):
         description = extract_description(text)
         
         #PRICE
-        price = extract_price(text)
+        price = extract_pricing(text)
 
         # ---- Image ----
         image_path = None
@@ -68,21 +68,24 @@ async def scrape_messages(client, channel, limit=5):
         # FINALE OBJECT
         events.append({
             "messageId": messageId,
-            "title": title,
-            "description": description,
-            "price": price,
+            "title": extract_title(text),
+            "description": extract_description(text),
+            "date": extract_date(text),
+            "location": extract_location(text),
+            "city": extract_city(text),
+            "price": extract_pricing(text),
+            "contact": extract_contact(text),
             "image": image_url,
             "datePosted": message.date.isoformat() if message.date else None,
-        })
+         })
+
         max_seen_id = max(max_seen_id, message.id)
 
         print("📌 EVENT FOUND")
         
     if events:
-        response = requests.post(api_endpoint, json=events)
         save_last_id(channel, max_seen_id)
         print(f"✅ {len(events)} new events from {channel}")
-        print(f"the api response {response}")
     else:
         print(f"ℹ️ No new events from {channel}")
 
