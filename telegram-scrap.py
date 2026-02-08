@@ -84,6 +84,7 @@ async def scrape_messages(client, channel, limit=5):
         print("📌 EVENT FOUND")
         
     if events:
+        response = requests.post(api_endpoint, json=events)
         save_last_id(channel, max_seen_id)
         print(f"✅ {len(events)} new events from {channel}")
     else:
